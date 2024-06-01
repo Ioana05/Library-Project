@@ -1,19 +1,19 @@
 # Gestionarea unei librarii - Etapa 1, Proiect Java
 ## <ul>Tipurile de obiecte folosite sunt:<lul>
-<li>Book</li>
-<li>Reader</li>
-<li>Borrow</li>
-<li>Employee</li>
-<li>Event</li>
-<li> Library </li>
-<li>Librarian (sublasa a clasei Employee)</li>
-<li>LibraryDirector (subclasa a clasei Employee)</li>
-<li>ReadWrite (interfarta folosita pentru citire in acest moment)</li>
-<li> Menu </li>
+<li>model.Book</li>
+<li>model.Reader</li>
+<li>model.Borrow</li>
+<li>model.Employee</li>
+<li>model.Event</li>
+<li> model.Library </li>
+<li>model.Librarian (sublasa a clasei model.Employee)</li>
+<li>model.LibraryDirector (subclasa a clasei model.Employee)</li>
+<li>model.ReadWrite (interfarta folosita pentru citire in acest moment)</li>
+<li> View.Menu </li>
 
 ## Interogari disponibile:
 Dupa rulare, vor fi necesare cateva date pentru instantierea clasei biblioteca, dar si a unui obiect de tip director.
-In prima parte a meniului utilizatorul va avea obtiunea sa selecteze tipul de utilizator: Librarian sau Librarian Director(am folosit doar aceste doua optiuni intrucat am gandit aplicatia ca pe una folosita in bibliotecile fizice). Pentru optiunea Library Director, utilizatorul va trebui sa introduca o parola :"IAMTHEBOSS". Astfel, in functie de utilizator, vor exista interogari diferite(cu exceptia celor care tin de evenimente).
+In prima parte a meniului utilizatorul va avea obtiunea sa selecteze tipul de utilizator: model.Librarian sau model.Librarian Director(am folosit doar aceste doua optiuni intrucat am gandit aplicatia ca pe una folosita in bibliotecile fizice). Pentru optiunea model.Library Director, utilizatorul va trebui sa introduca o parola :"IAMTHEBOSS". Astfel, in functie de utilizator, vor exista interogari diferite(cu exceptia celor care tin de evenimente).
 ### Interogari disponibile pentru bibliotecar:
 <li> Adaugarea unui nou eveniment</li>
 <li> Vizualizarea evenimentelor viitoare </li>

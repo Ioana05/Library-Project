@@ -1,7 +1,13 @@
+package model;
+
+import model.*;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Library {
+    private int libraryID;
     private String name;
     private String address;
     private String city;
@@ -16,9 +22,10 @@ public class Library {
     private List<Event> events;
     private LibraryDirector director;
 
-    public Library(String name, String address, String city, String phoneNumber,String program) {
+    public Library(int libraryID, String name, String address, String city, String phoneNumber,String program) {
+        this.libraryID = libraryID;
         this.name = name;
-        this. address = address;
+        this.address = address;
         this.city = city;
         this.phoneNumber = phoneNumber;
         this.program = program;
@@ -35,6 +42,7 @@ public class Library {
     }
 
     public Library() {
+        this.libraryID = -1;
         this.name = "";
         this.address = "";
         this.city = "";
@@ -52,7 +60,39 @@ public class Library {
 
         this.director = new LibraryDirector();
     }
-     ///////// SETTERI////////
+
+    ////////// GETTERI ////////
+    public int getLibraryID() {
+        return libraryID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getProgram() {
+        return program;
+    }
+
+
+    ///////// SETTERI////////
+
+
+    public void setLibraryID(int libraryID) {
+        this.libraryID = libraryID;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -145,6 +185,19 @@ public class Library {
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", program='" + program + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Library library = (Library) o;
+        return libraryID == library.libraryID && Objects.equals(name, library.name) && Objects.equals(address, library.address) && Objects.equals(city, library.city) && Objects.equals(phoneNumber, library.phoneNumber) && Objects.equals(program, library.program) && Objects.equals(books, library.books) && Objects.equals(employees, library.employees) && Objects.equals(librarian, library.librarian) && Objects.equals(readers, library.readers) && Objects.equals(borrows, library.borrows) && Objects.equals(events, library.events) && Objects.equals(director, library.director);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(libraryID, name, address, city, phoneNumber, program, books, employees, librarian, readers, borrows, events, director);
     }
 }
 

@@ -1,6 +1,13 @@
+package View;
+
+import DAO.*;
+import model.*;
+import DataBase.DatabaseConnection;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Collections;
@@ -8,15 +15,43 @@ import java.util.Comparator;
 
 public class Menu {
     private static Menu menu;
+    private DatabaseConnection databaseConnection;
+    Connection myConnection;
+
     private Library library;
     private Scanner scanner;
 
     private LibraryDirector director;
 
+    private BookDB bookDB;
+    private BorrowDB borrowDB;
+    private CategoryDB categoryDB;
+    private EmployeeDB employeeDB;
+    private EventDB eventDB;
+    private LibraryDB libraryDB;
+    private LibrarianDB librarianDB;
+    private LibraryDirectorDB libraryDirectorDB;
+    private MembershipDB membershipDB;
+    private ReaderDB readerDB;
+
     private Menu() {
         this.library = new Library();
         this.scanner = new Scanner(System.in);
         this.director = new LibraryDirector();
+
+        this.databaseConnection = DatabaseConnection.getInstance();
+        this.myConnection = this.databaseConnection.start();
+
+        bookDB = new BookDB(myConnection);
+        borrowDB = new BorrowDB(myConnection);
+        categoryDB = new CategoryDB(myConnection);
+        employeeDB = new EmployeeDB(myConnection);
+        eventDB = new EventDB(myConnection);
+        libraryDB = new LibraryDB(myConnection);
+        librarianDB  = new LibrarianDB(myConnection);
+        libraryDirectorDB = new LibraryDirectorDB(myConnection);
+        membershipDB = new MembershipDB(myConnection);
+        readerDB = new ReaderDB(myConnection);
 
         this.InitiateLibrary(this.library);
     }
@@ -33,6 +68,11 @@ public class Menu {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Hello! Welcome to your virtual library! First you'll have to give some details about your library :");
+
+        System.out.println("Set an ID for your library.(it should consists of 6 digits)");
+        int libID = scanner.nextInt();
+        library.setLibraryID(libID);
+        scanner.nextLine();
 
         System.out.println("What is the name of the library?");
         String libName = scanner.nextLine();
@@ -57,9 +97,13 @@ public class Menu {
         this.director.readData(this.scanner);
         library.setDirector(this.director);
 
+        // adaugam libraria in baza de date
+        libraryDB.createLibrary(library);
+        libraryDirectorDB.createLibraryDirector(director);
+
         System.out.println("Congrats! You finished the configuration of your library. Now you'll be redirected to the real menu of the library: ");
     }
-    void InitiateMenu() {
+    void initiateMenu() {
         int userschoice = 0;
 
         do {
@@ -78,16 +122,17 @@ public class Menu {
                         String password;
                         password = this.scanner.nextLine();
                         if (password.equals("IAMTHEBOSS"))
-                            DirectorMenu();
+                            directorMenu();
                         else
                             System.out.println("The password you introduced is not correct. Are you the real director? :/");
                         break;
                     case 2:
                         System.out.println("Hello, librarian !");
-                        LibrarianMenu();
+                        librarianMenu();
                         break;
                     case 3:
                         System.out.println("Exiting...");
+                        closeConnection();
                         break;
                     default:
                         System.out.println("Invalid choice. Please enter a valid option.");
@@ -101,7 +146,17 @@ public class Menu {
         } while (userschoice != 3);
     }
 
-    private void DirectorMenu() {
+    private void closeConnection() {
+        if (myConnection != null) {
+            try {
+                myConnection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void directorMenu() {
         int dirishere = 1;
         while (dirishere == 1) {
             System.out.println("Choose from the next options:");
@@ -120,24 +175,23 @@ public class Menu {
                 switch (dirchoice) {
                     case 10:
                         System.out.println("What event do you want to add? :");
-                        AddaNewEvent();
+                        addaNewEvent();
                         break;
                     case 11:
                         System.out.println("Here are the future events: ");
-                        SeeFutureEvents();
+                        seeFutureEvents();
                         break;
                     case 12:
-                        System.out.println("What event do you want to delete?");
-                        DeleteFutureEvent();
+                        deleteFutureEvent();
                         break;
                     case 13:
-                        DisplayLibrarians();
+                        displayLibrarians();
                         break;
                     case 14:
-                        AddLibrarian();
+                        addLibrarian();
                         break;
                     case 15:
-                        DeleteEmployee();
+                        deleteEmployee();
                         break;
                     case 16:
                         System.out.println("Exiting...");
@@ -154,7 +208,7 @@ public class Menu {
         }
     }
 
-    private void LibrarianMenu() {
+    private void librarianMenu() {
         int libishere = 1;
         while (libishere == 1) {
             System.out.println("Choose from the next options:");
@@ -171,7 +225,9 @@ public class Menu {
             System.out.println("30. Add a new book");
             System.out.println("31. Add a new reader");
             System.out.println("32. Add a new borrow");
+            System.out.println("34. Edit a borrow ");
             System.out.println("33. Go back to the previous menu ");
+
 
 
 
@@ -182,151 +238,185 @@ public class Menu {
                 switch (libchoice) {
                     case 20:
                         System.out.println("What event do you want to add? :");
-                        AddaNewEvent();
+                        addaNewEvent();
                         break;
                     case 21:
 
                         System.out.println("Here are the future events: ");
-                        SeeFutureEvents();
+                        seeFutureEvents();
                         break;
                     case 22:
-                        DeleteFutureEvent();
+                        deleteFutureEvent();
                         break;
                     case 23:
-                        SearchBookbyName();
+                        searchBookbyName();
                         break;
                     case 24:
-                        SearchBookbyAuthor();
+                        searchBookbyAuthor();
                         break;
                     case 25:
-                        SearchforReader();
+                        searchforReader();
                         break;
                     case 26:
-                        SearchforNoofBooks();
+                        searchforNoofBooks();
                         break;
                     case 27:
-                        ReturnofaBook();
+                        returnofaBook();
                         break;
                     case 28:
-                        SearchforDueDate();
+                        searchforDueDate();
                         break;
                     case 29:
-                        BooksofaReader();
+                        booksofaReader();
                         break;
                     case 30:
-                        AddaBook();
+                        addaBook();
                         break;
                     case 31:
-                        AddaReader();
+                        addaReader();
                         break;
                     case 32:
-                        AddaBorrow();
+                        addaBorrow();
                         break;
                     case 33:
                         System.out.println("Exiting...");
                         libishere = 0;
                         break;
+                    case 34:
+                        editaBorrow();
 
                 }
             }
             catch(NoSuchElementException e){
                 System.out.println("Invalid choice. Please enter a valid option.");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }
     }
 
-    private void AddaBorrow() {
+    private void editaBorrow() {
+        Borrow borrow = new Borrow();
+        borrow.readData(this.scanner);
+        borrowDB.updateBoroow(borrow);
+        System.out.println("The borrow was modified");
+    }
+
+    private void addaBorrow() {
         Borrow borrow = new Borrow() ;
         borrow.readData(this.scanner);
         library.AddBorrowtoList(borrow);
 
-        // adaugam cartea in lista de carti imprumutate
-        String aux = borrow.borrowedBook.toUpperCase();
-        for (int i = 0 ; i < library.getBooks().size(); i++){
-            Book currentBook = library.getBooks().get(i);
 
-            if (aux.equals(currentBook.getTitle().toUpperCase()) && currentBook.getNoOfPieces() > 0){
-                // scad numarul de exemplare din cartea pe care tocmai o imprumut
-                int NoofBooks = currentBook.getNoOfPieces();
-                currentBook.setNoOfPieces(NoofBooks - 1);
+        // adaugam cartea in lista de carti imprumutate si in baza de date
+        borrowDB.createBorrow(borrow);
+        //String aux = borrow.borrowedBook.toUpperCase();
 
-                /// adaugam cartea si in lista de imprumuri a celui care a cerut-0
-                String Borrower =  borrow.getUserID();
+//        for (int i = 0 ; i < library.getBooks().size(); i++){
+//            model.Book currentBook = library.getBooks().get(i);
 
-                for (int j = 0; j <library.getReaders().size(); j++)
-                {
-                    if((Borrower.equals(library.getReaders().get(j).getUserId()))) {
-                        library.getReaders().get(j).booksBorrowed.add(currentBook);
-                        library.getReaders().get(j).readingHistory.add(currentBook);
-                    }
-                }
-            }
-            else
-                System.out.println("Cartea cautata nu este disponibila!");
-        }
+//            if (aux.equals(currentBook.getTitle().toUpperCase()) && currentBook.getNoOfPieces() > 0){
+//                // scad numarul de exemplare din cartea pe care tocmai o imprumut
+//                int NoofBooks = currentBook.getNoOfPieces();
+//                currentBook.setNoOfPieces(NoofBooks - 1);
+//
+//                /// adaugam cartea si in lista de imprumuri a celui care a cerut-0
+//                String Borrower =  borrow.getUserID();
+//
+//                for (int j = 0; j <library.getReaders().size(); j++)
+//                {
+//                    if((Borrower.equals(library.getReaders().get(j).getUserId()))) {
+//                        library.getReaders().get(j).booksBorrowed.add(currentBook);
+//                        library.getReaders().get(j).readingHistory.add(currentBook);
+//                    }
+//                }
+//            }
+//            else {
+//                System.out.println("Cartea cautata nu este disponibila!");
+//            }
+//        }
     }
 
-    private void AddaReader() {
+    private void addaReader() {
         Reader reader = new Reader();
         reader.readData(this.scanner);
-        library.AddReadertoList(reader);
 
+        library.AddReadertoList(reader);
+        // adaugam cititorul in baza de date
+        readerDB.createReader(reader);
     }
 
-    private void AddaBook() {
+    private void addaBook() throws SQLException {
         Book book = new Book() ;
         book.readData(this.scanner);
-        library.AddBooktoList(book);
 
+        library.AddBooktoList(book);
+        // adaugam cartea in baza de date
+        bookDB.createBook(book);
     }
 
-    private void BooksofaReader() {
+    private void booksofaReader() {
         System.out.println("Write the ID of the reader: ");
         String ID = scanner.nextLine();
 
+        // afisare folosind baza de date
+        List <Borrow> borrows = borrowDB.readBorrow();
+
+         System.out.print("Books borrowed by the reader: ");
+         for(int j = 0; j < borrows.size(); j++) {
+             if (borrows.get(j).getUserID().equals(ID))
+                System.out.println(borrows.get(j).getBorrowedBook());
+
+         }
+
+        // ne ocupam de lista
         for (int i = 0; i < library.getReaders().size(); i++){
-             int result = ID.compareTo(library.getReaders().get(i).userId);
+             int result = ID.compareTo(library.getReaders().get(i).getUserId());
              if (result == 0){
                  List<Book> borrowedBooks = library.getReaders().get(i).getBooksBorrowed();
                  Collections.sort(borrowedBooks, Comparator.comparing(Book::getTitle));
 
-                 System.out.print("Books borrowed by the reader: ");
-                 for(int j = 0; j < borrowedBooks.size(); j++) {
-                     System.out.print(borrowedBooks.get(j).toString());
-                     System.out.println();
-                 }
+//                 System.out.print("Books borrowed by the reader: ");
+//                 for(int j = 0; j < borrowedBooks.size(); j++) {
+//                     System.out.print(borrowedBooks.get(j).toString());
+//                     System.out.println();
+//                 }
             }
         }
     }
 
-    private void SearchforDueDate() {
-        System.out.println("Write the name of the borrowed book:");
+    private void searchforDueDate() {
+        System.out.println("Write the ID of the borrowed book:");
         String brrwdBook = scanner.nextLine().toUpperCase();
         System.out.println("Write the ID of the person who borrowed it: ");
         String borrower = scanner.nextLine();
 
-        for (int i = 0; i < library.getBorrows().size(); i++)
+        List<Borrow> aux = borrowDB.readBorrow();
+        for (int i = 0; i < aux.size(); i++)
         {
-            if (library.getBorrows().get(i).borrowedBook.toUpperCase().equals(brrwdBook) && borrower == library.getBorrows().get(i).userID){
-                System.out.println(library.getBorrows().get(i).dueDate);
+            if (aux.get(i).getBorrowedBook().toUpperCase().equals(brrwdBook) && aux.get(i).getUserID().equals(borrower)){
+                System.out.println(aux.get(i).getDueDate());
             }
         }
 
+
+//        for (int i = 0; i < library.getBorrows().size(); i++)
+//        {
+//            if (library.getBorrows().get(i).borrowedBook.toUpperCase().equals(brrwdBook) && borrower == library.getBorrows().get(i).userID){
+//                System.out.println(library.getBorrows().get(i).dueDate);
+//            }
+//        }
+
     }
 
-    private void ReturnofaBook() {
-        System.out.println("What is the book you want to return? ");
+    private void returnofaBook() {
+        System.out.println("What is the book you want to return?(ISBN) ");
         String book = scanner.nextLine().toUpperCase();
         System.out.println("Write the ID of the person who wants to return it: ");
         String borrower = scanner.nextLine();
 
-        // crestem numarul de carti disponibile din cartea care este returnata
-        for(int i = 0; i < library.getBooks().size(); i++) {
-            if (book.equals(library.getBooks().get(i).getTitle().toUpperCase())){
-                int NoofBooks = library.getBooks().get(i).getNoOfPieces();
-                library.getBooks().get(i).setNoOfPieces(NoofBooks+1);
-            }
-        }
+        // stergem cartea din baza de date
+        borrowDB.deleteBorrow(borrower, book);
 
         // stergem cartea din lista de imprumuturi si din lista de imprumuturi a cititorului
         for(int i = 0; i < library.getBorrows().size(); i++) {
@@ -337,112 +427,144 @@ public class Menu {
 
         for(int i = 0; i < library.getReaders().size(); i++) {
             if (borrower.equals(library.getReaders().get(i).getUserId())){
-                for (int j = 0; j < library.getReaders().get(i).booksBorrowed.size(); j++)
+                for (int j = 0; j < library.getReaders().get(i).getBooksBorrowed().size(); j++)
                 {
-                    if (book.equals(library.getReaders().get(i).booksBorrowed.get(i).getTitle().toUpperCase()))
-                        library.getReaders().get(i).booksBorrowed.remove(i);
+                    if (book.equals(library.getReaders().get(i).getBooksBorrowed().get(i).getTitle().toUpperCase()))
+                        library.getReaders().get(i).getBooksBorrowed().remove(i);
                 }
             }
         }
     }
 
-    private void SearchforNoofBooks() {
+    private void searchforNoofBooks() {
         System.out.println("For what book do you want to know the number of available pieces: ");
         String bookName = scanner.nextLine().toUpperCase();
-        for (int i = 0 ; i < library.getBooks().size(); i++){
-            if (bookName.equals(library.getBooks().get(i).getTitle().toUpperCase())){
-                System.out.println("Numarul de bucati din cartea cautata este egal cu: ");
-                System.out.println(library.getBooks().get(i).getNoOfPieces());
+        // for ul era folosit atunci cand foloseam liste
+//        for (int i = 0 ; i < library.getBooks().size(); i++){
+//            if (bookName.equals(library.getBooks().get(i).getTitle().toUpperCase())){
+//                System.out.println("Numarul de bucati din cartea cautata este egal cu: ");
+//                System.out.println(library.getBooks().get(i).getNoOfPieces());
+//                return;
+//            }
+//        }
+
+        int result = bookDB.getNumberOfBook(bookName);
+        System.out.println("Number of books with the given name: " + result);
+    }
+
+    private void searchforReader() {
+        System.out.println("Introduce the first name of the reader: ");
+        String readerName = scanner.nextLine();
+        List<Reader> aux = readerDB.readReader();
+        for (int i = 0 ; i < aux.size(); i++){
+            if (readerName.equals(aux.get(i).getfirstName().toUpperCase())){
+                System.out.println(aux.get(i).toString());
                 return;
             }
         }
     }
 
-    private void SearchforReader() {
-        System.out.println("Introduce the name of the reader: ");
-        String readerName = scanner.nextLine().toUpperCase();
-        for (int i = 0 ; i < library.getReaders().size(); i++){
-            if (readerName.equals(library.getReaders().get(i).getName().toUpperCase())){
-                System.out.println(library.getReaders().get(i).toString());
-                return;
-            }
-        }
-    }
-
-    private void SearchBookbyAuthor() {
+    private void searchBookbyAuthor() {
         System.out.println("Introduce the name of the writer: ");
+
+        List <Book> aux = bookDB.readBook();
         String writerName = scanner.nextLine().toUpperCase();
-        for (int i = 0 ; i < library.getBooks().size(); i++){
-            if (writerName.equals(library.getBooks().get(i).getAuthor().toUpperCase())){
-                System.out.println(library.getBooks().get(i).toString());
+        for (int i = 0 ; i < aux.size(); i++){
+            if (writerName.equals(aux.get(i).getAuthor().toUpperCase())){
+                System.out.println(aux.get(i).toString());
                 return;
             }
         }
         System.out.println("The book you asked for doesn't exist in our library");
     }
     
-    private void SearchBookbyName() {
+    private void searchBookbyName() {
         System.out.println("Introduce the name of the book you want to search for:");
+        // citim cartile din baza de date
+        List<Book> aux = bookDB.readBook();
         String bookName = scanner.nextLine().toUpperCase();
-        for (int i = 0 ; i < library.getBooks().size(); i++){
-            if (bookName.equals(library.getBooks().get(i).getTitle().toUpperCase())){
-                System.out.println(library.getBooks().get(i).toString());
+        for (int i = 0 ; i < aux.size(); i++){
+            if (bookName.equals(aux.get(i).getTitle().toUpperCase())){
+                System.out.println(aux.get(i).toString());
                 return;
             }
         }
         System.out.println("In this library doesn't exist the book with the specified name");
     }
 
-    private void DeleteEmployee() {
-        System.out.println("What librarian do you want to delete from the database? Type the index:");
-        List<Librarian> aux = library.getLibrarian();
-        for (int i = 0; i < aux.size(); i++){
-            System.out.println(aux.get(i).toString());
-        }
+    private void deleteEmployee() {
+        System.out.println("What librarian do you want to delete from the database? Type the ID:");
+        librarianDB.readAllLibrarians();
+//        List<model.Librarian> aux = library.getLibrarian();
+//        for (int i = 0; i < aux.size(); i++){
+//            System.out.println(aux.get(i).toString());
+//        }
+        // fac un obiect de tpul model.Librarian care sa contina id ul pe care ul vreau sa il trimit
         int ind = scanner.nextInt();
-        aux.remove(ind);
+        Librarian aux = new Librarian();
+        aux.setCNP(ind);
+
+        System.out.println(ind);
+        // stergem angajatul din baza de date
+        employeeDB.deleteEmployee(aux);
+        // stergem angajatul din clasa model.Library
+        //aux.remove(ind);
+
+        System.out.println("The selected employee was removed");
     }
 
-    private void AddLibrarian() {
+    private void addLibrarian() {
         Librarian lib = new Librarian() ;
         lib.readData(this.scanner);
+
         library.AddLibrariantoList(lib);
-        return;
+        // adaugam bibliotecarul in baza de date
+        librarianDB.createLibrarian(lib);
     }
 
-    private void DisplayLibrarians() {
-        library.ShowLibrarians();
+    private void displayLibrarians() {
+        // metoda apelate inainte de existenta bazei de date
+        // library.ShowLibrarians();
+
+        // afisam libraria direct din baza de date
+        librarianDB.readAllLibrarians();
     }
 
-    private void AddaNewEvent(){
+    private void addaNewEvent(){
         Event event = new Event() ;
         event.readData(this.scanner);
+
         library.AddEventtoList(event);
+        // adaugam evenimentul in baza de date
+        eventDB.createEvent(event);
     }
-    private void SeeFutureEvents(){
-        List<Event> aux = library.getEvents();
+    private void seeFutureEvents(){
+        //List<model.Event> aux = library.getEvents();
+        List<Event> aux = eventDB.readEvents();
         LocalDate today = LocalDate.now();
         int comparisonResault ;
         for (int i = 0; i < aux.size(); i++){
-            comparisonResault = today.compareTo(aux.get(i).date);
+            comparisonResault = today.compareTo(aux.get(i).getDate());
             if (comparisonResault < 0 )
             {
-                System.out.println(aux.toString());
+                System.out.println(aux.get(i).toString());
             }
         }
 
     }
-    private void DeleteFutureEvent(){
-        System.out.println("What Event do you want to delete? Type the index:");
-        List<Event> aux = library.getEvents();
+    private void deleteFutureEvent(){
+        System.out.println("What model.Event do you want to delete? Type the index:");
+        List<Event> aux = eventDB.readEvents();
         for (int i = 0; i < aux.size(); i++){
             System.out.println(aux.get(i).toString());
         }
         int ind = scanner.nextInt();
+
+        // stergem evenimentul din baza de date
+        eventDB.deleteEvent(aux.get(ind));
+        // stergem evenimentul din clasa model.Library
         aux.remove(ind);
+
         System.out.println("The selected event was deleted");
-
     }
-
-
 }
